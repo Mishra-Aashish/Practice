@@ -1,0 +1,63 @@
+StudentController.java
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+package com.example.demo.controller;
+
+import com.example.demo.entity.Student;
+import com.example.demo.service.StudentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/students") // Base URL for all student-related endpoints
+public class StudentController {
+
+    private final StudentService studentService;
+
+    // Constructor-based dependency injection
+    @Autowired
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
+
+    // Endpoint to get all students
+    @GetMapping
+    public List<Student> getAllStudents() {
+        return studentService.getAllStudents();  // Calling the service method to get all students
+    }
+
+    // Endpoint to get a specific student by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
+        Optional<Student> student = studentService.getStudentById(id);
+        if (student.isPresent()) {
+            return ResponseEntity.ok(student.get());  // Return student if found
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // Return 404 if student not found
+        }
+    }
+
+    // Endpoint to save a student (via POST request)
+    @PostMapping
+    public ResponseEntity<Student> saveStudent(@RequestBody Student student) {
+        Student savedStudent = studentService.saveStudent(student);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedStudent);  // Return 201 Created status with saved student
+    }
+
+    // Endpoint to delete a student by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        Optional<Student> student = studentService.getStudentById(id);
+        if (student.isPresent()) {
+            studentService.deleteStudent(id);  // Delete student if found
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // Return 204 No Content after successful deletion
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // Return 404 if student not found
+        }
+    }
+}
